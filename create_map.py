@@ -50,7 +50,7 @@ if __name__ == "__main__":
         locations="Village_ID",
         color="District",
         color_continuous_scale="Viridis",
-        mapbox_style="carto-positron",
+        mapbox_style="open-street-map",
         featureidkey="properties.Village_ID",
         zoom=11,
         center={"lat": -1.953402, "lon": 30.090357},
