@@ -54,7 +54,7 @@ if __name__ == "__main__":
         featureidkey="properties.Village_ID",
         zoom=11,
         center={"lat": -1.953402, "lon": 30.090357},
-        opacity=0.35,
+        opacity=0.5,
         labels={"Name": "Village/Umudugudu"},
         hover_name="Name",
         hover_data=["District", "Sector", "Cell"],
