@@ -2,6 +2,7 @@
 
 This code is used to build an interactive map of Villages/Umudugudus of Kigali. The map uses the shapefiles published by the [world bank data catalog](https://datacatalog.worldbank.org/dataset/rwanda-admin-boundaries-and-villages/resource/541db017-5a04-4f3d-a387-20a169553a50) 
 
+Follow this link for the interactive map: [https://felipeam86.github.io/umudugudu/](https://felipeam86.github.io/umudugudu/)
 
 
 ## Reproducing the map
