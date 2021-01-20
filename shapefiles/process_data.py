@@ -14,44 +14,87 @@ def unzip_worldbank_files(worldbank_shapefiles: Path = SHAPEFILES_PATH):
             zipfh.extractall(worldbank_shapefiles / zipfile.stem)
 
 
-def clean_province_ids(df):
+def process_villages(df):
     provinces_ids = (
         df.groupby("Province")
-        .Prov_ID.value_counts()
+        .province_id.value_counts()
         .rename("count")
         .sort_values(ascending=False)[:5]
         .reset_index(-1)
         .drop(columns=["count"])
-        .Prov_ID.to_dict()
+        .province_id.to_dict()
     )
-    df.loc[:, "Prov_ID"] = df.Province.map(provinces_ids)
+    df.loc[:, "province_id"] = df.Province.map(provinces_ids)
+    df = df.set_index("village_id")
+    df.to_parquet(PARQUETFILES_PATH / "Village.parquet")
+    return df
+
+
+def process_cells(df):
+    df.set_index("cell_id").to_parquet(PARQUETFILES_PATH / "Cell.parquet")
+    return df
+
+
+def process_sectors(df):
+    df.set_index("sector_id").to_parquet(PARQUETFILES_PATH / "Sector.parquet")
 
     return df
 
 
-def clean_district_ids(df):
-    df.loc[:, "Dist_ID"] = df.loc[:, "Dist_ID"].map(int).map(str)
+def process_districts(df_districts, df_villages):
+    df_districts = df_districts.set_index("district_id").join(
+        df_villages[["district_id", "province_id", "Province"]]
+        .drop_duplicates()
+        .set_index("district_id")
+    )[["province_id", "Province", "District", "geometry"]]
+    df_districts.to_parquet(PARQUETFILES_PATH / "District.parquet")
+
+    return df_districts
+
+
+def make_province_geometries(df_districts):
+    df = (
+        df_districts.groupby(["province_id", "Province"])
+        .geometry.apply(lambda df: df.unary_union)
+        .to_frame()
+        .reset_index()
+        .set_index("province_id")
+    )
+
+    df.to_parquet(PARQUETFILES_PATH / "Province.parquet")
     return df
 
 
 def process_worldbank_shapefile(worldbank_shapefiles: Path = SHAPEFILES_PATH):
     PARQUETFILES_PATH.mkdir(exist_ok=True)
     worldbank_shapefiles = Path(worldbank_shapefiles)
-    for shapefile in worldbank_shapefiles.glob("**/*.shp"):
+
+    def read(shapefile: Path):
         df = gpd.read_file(shapefile).to_crs("EPSG:4326")
-        if shapefile.name == "Village.shp":
-            df = clean_province_ids(df)
-        if shapefile.name == "District.shp":
-            df = clean_district_ids(df)
-        df.to_parquet(PARQUETFILES_PATH / shapefile.with_suffix(".parquet").name)
+        for col in df.columns:
+            if "_ID" in col:
+                df.loc[:, col] = df.loc[:, col].map(int).map(str)
+        return df.rename(
+            columns={
+                "Prov_ID": "province_id",
+                "Dist_ID": "district_id",
+                "Distr_ID": "district_id",
+                "Sect_ID": "sector_id",
+                "Village_ID": "village_id",
+                "Cell_ID": "cell_id",
+            }
+        )
 
+    df_villages = read(worldbank_shapefiles / "rwa_villages" / "Village.shp")
+    df_cells = read(worldbank_shapefiles / "rwa_cell" / "Cell.shp")
+    df_sectors = read(worldbank_shapefiles / "rwa_sector" / "Sector.shp")
+    df_districts = read(worldbank_shapefiles / "rwa_district" / "District.shp")
 
-def make_province_geometries():
-    df_districts = data.get_districts()
-    df_d = (
-        df[["Province", "Prov_ID", "Distr_ID"]].drop_duplicates().set_index("Distr_ID")
-    )
-    df_districts = df_districts.join(df_d)
+    df_villages = process_villages(df_villages)
+    df_cells = process_cells(df_cells)
+    df_sectors = process_sectors(df_sectors)
+    df_districts = process_districts(df_districts, df_villages)
+    df_provinces = make_province_geometries(df_districts)
 
 
 def main():
