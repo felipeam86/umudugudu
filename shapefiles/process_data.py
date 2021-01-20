@@ -4,6 +4,7 @@ from zipfile import ZipFile
 import geopandas as gpd
 
 SHAPEFILES_PATH = Path(__file__).parent
+PARQUETFILES_PATH = Path(__file__).parent.parent / "umudugudu" / "data"
 
 
 def unzip_worldbank_files(worldbank_shapefiles: Path = SHAPEFILES_PATH):
@@ -16,12 +17,12 @@ def unzip_worldbank_files(worldbank_shapefiles: Path = SHAPEFILES_PATH):
 def clean_province_ids(df):
     provinces_ids = (
         df.groupby("Province")
-            .Prov_ID.value_counts()
-            .rename("count")
-            .sort_values(ascending=False)[:5]
-            .reset_index(-1)
-            .drop(columns=["count"])
-            .Prov_ID.to_dict()
+        .Prov_ID.value_counts()
+        .rename("count")
+        .sort_values(ascending=False)[:5]
+        .reset_index(-1)
+        .drop(columns=["count"])
+        .Prov_ID.to_dict()
     )
     df.loc[:, "Prov_ID"] = df.Province.map(provinces_ids)
 
@@ -29,13 +30,14 @@ def clean_province_ids(df):
 
 
 def process_worldbank_shapefile(worldbank_shapefiles: Path = SHAPEFILES_PATH):
+    PARQUETFILES_PATH.mkdir(exist_ok=True)
     worldbank_shapefiles = Path(worldbank_shapefiles)
     for shapefile in worldbank_shapefiles.glob("**/*.shp"):
         df = gpd.read_file(shapefile).to_crs("EPSG:4326")
-        df.to_parquet(worldbank_shapefiles / shapefile.with_suffix(".parquet").name)
         if shapefile.name == "Village.shp":
             print("cleaning")
             df = clean_province_ids(df)
+        df.to_parquet(PARQUETFILES_PATH / shapefile.with_suffix(".parquet").name)
 
 
 def main():
