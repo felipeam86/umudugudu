@@ -29,15 +29,29 @@ def clean_province_ids(df):
     return df
 
 
+def clean_district_ids(df):
+    df.loc[:, "Dist_ID"] = df.loc[:, "Dist_ID"].map(int).map(str)
+    return df
+
+
 def process_worldbank_shapefile(worldbank_shapefiles: Path = SHAPEFILES_PATH):
     PARQUETFILES_PATH.mkdir(exist_ok=True)
     worldbank_shapefiles = Path(worldbank_shapefiles)
     for shapefile in worldbank_shapefiles.glob("**/*.shp"):
         df = gpd.read_file(shapefile).to_crs("EPSG:4326")
         if shapefile.name == "Village.shp":
-            print("cleaning")
             df = clean_province_ids(df)
+        if shapefile.name == "District.shp":
+            df = clean_district_ids(df)
         df.to_parquet(PARQUETFILES_PATH / shapefile.with_suffix(".parquet").name)
+
+
+def make_province_geometries():
+    df_districts = data.get_districts()
+    df_d = (
+        df[["Province", "Prov_ID", "Distr_ID"]].drop_duplicates().set_index("Distr_ID")
+    )
+    df_districts = df_districts.join(df_d)
 
 
 def main():
