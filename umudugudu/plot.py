@@ -68,7 +68,17 @@ VILLAGE_HOVERTEMPLATE = """
 """
 
 
-def administrative_divisions(df: gpd.GeoDataFrame, opacity=0.25, line_width=1.5):
+def administrative_divisions(
+    df: gpd.GeoDataFrame,
+    opacity=0.25,
+    line_width=1.5,
+    transparent: bool = False,
+):
+    if transparent:
+        colors = ["rgba(255,255,255,0)"]
+    else:
+        colors = hex_to_rgba(px.colors.qualitative.D3, opacity=opacity)
+
     zoom, center = get_zoom_center(df)
     fig = px.choropleth_mapbox(
         df,
@@ -80,9 +90,12 @@ def administrative_divisions(df: gpd.GeoDataFrame, opacity=0.25, line_width=1.5)
         center=center,
         opacity=1,
         hover_data=["Village", "Cell", "Sector", "District", "Province"],
-        color_discrete_sequence=hex_to_rgba(px.colors.qualitative.D3, opacity=opacity),
+        color_discrete_sequence=colors,
     )
-    fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    fig.update_layout(
+        margin={"r": 0, "t": 0, "l": 0, "b": 0},
+        showlegend=not transparent,
+    )
     fig.update_traces(
         marker_line_width=line_width,
         hovertemplate=VILLAGE_HOVERTEMPLATE,
