@@ -59,6 +59,15 @@ def hex_to_rgba(cmap, opacity=1.0):
     ]
 
 
+VILLAGE_HOVERTEMPLATE = """
+<b>Village</b>=%{customdata[0]}<br>
+<b>Cell</b>=%{customdata[1]}<br>
+<b>Sector</b>=%{customdata[2]}<br>
+<b>District</b>=%{customdata[3]}<br>
+<b>Province</b>=%{customdata[4]}<extra></extra>
+"""
+
+
 def administrative_divisions(df: gpd.GeoDataFrame, opacity=0.25, line_width=1.5):
     zoom, center = get_zoom_center(df)
     fig = px.choropleth_mapbox(
@@ -70,12 +79,12 @@ def administrative_divisions(df: gpd.GeoDataFrame, opacity=0.25, line_width=1.5)
         zoom=zoom,
         center=center,
         opacity=1,
-        labels={"Name": "Village/Umudugudu"},
-        hover_name="Name",
-        hover_data=["District", "Sector", "Cell"],
+        hover_data=["Village", "Cell", "Sector", "District", "Province"],
         color_discrete_sequence=hex_to_rgba(px.colors.qualitative.D3, opacity=opacity),
     )
     fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
-    fig.update_traces(marker_line_width=line_width)
-
+    fig.update_traces(
+        marker_line_width=line_width,
+        hovertemplate=VILLAGE_HOVERTEMPLATE,
+    )
     return fig

@@ -25,18 +25,20 @@ def process_villages(df):
         .province_id.to_dict()
     )
     df.loc[:, "province_id"] = df.Province.map(provinces_ids)
-    df = df.set_index("village_id")
+    df = df.set_index("village_id").rename(columns={"Name": "Village"})
     df.to_parquet(PARQUETFILES_PATH / "Village.parquet")
     return df
 
 
 def process_cells(df):
-    df.set_index("cell_id").to_parquet(PARQUETFILES_PATH / "Cell.parquet")
+    df = df.set_index("cell_id").rename(columns={"Name": "Cell"})
+    df.to_parquet(PARQUETFILES_PATH / "Cell.parquet")
     return df
 
 
 def process_sectors(df):
-    df.set_index("sector_id").to_parquet(PARQUETFILES_PATH / "Sector.parquet")
+    df = df.set_index("sector_id").rename(columns={"Name": "Sector"})
+    df.to_parquet(PARQUETFILES_PATH / "Sector.parquet")
 
     return df
 
