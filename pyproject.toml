@@ -9,6 +9,7 @@ python = "^3.8"
 geopandas = "^0.8.1"
 pyarrow = "^2.0.0"
 plotly = "^4.14.3"
+typer = "^0.3.2"
 
 [tool.poetry.dev-dependencies]
 ghp-import = "^1.0.0"

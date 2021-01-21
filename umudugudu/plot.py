@@ -52,7 +52,14 @@ def get_zoom_center(
     return zoom, center
 
 
-def administrative_divisions(df: gpd.GeoDataFrame):
+def hex_to_rgba(cmap, opacity=1.0):
+    return [
+        f"rgba({red}, {green}, {blue}, {opacity})"
+        for red, green, blue in map(px.colors.hex_to_rgb, cmap)
+    ]
+
+
+def administrative_divisions(df: gpd.GeoDataFrame, opacity=0.25, line_width=1.5):
     zoom, center = get_zoom_center(df)
     fig = px.choropleth_mapbox(
         df,
@@ -62,11 +69,13 @@ def administrative_divisions(df: gpd.GeoDataFrame):
         mapbox_style="open-street-map",
         zoom=zoom,
         center=center,
-        opacity=0.5,
+        opacity=1,
         labels={"Name": "Village/Umudugudu"},
         hover_name="Name",
         hover_data=["District", "Sector", "Cell"],
+        color_discrete_sequence=hex_to_rgba(px.colors.qualitative.D3, opacity=opacity),
     )
     fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    fig.update_traces(marker_line_width=line_width)
 
     return fig
