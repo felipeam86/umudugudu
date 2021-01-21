@@ -59,37 +59,39 @@ def hex_to_rgba(cmap, opacity=1.0):
     ]
 
 
-VILLAGE_HOVERTEMPLATE = """
-<b>Village</b>=%{customdata[0]}<br>
-<b>Cell</b>=%{customdata[1]}<br>
-<b>Sector</b>=%{customdata[2]}<br>
-<b>District</b>=%{customdata[3]}<br>
-<b>Province</b>=%{customdata[4]}<extra></extra>
-"""
-
-
 def administrative_divisions(
     df: gpd.GeoDataFrame,
     opacity=0.25,
     line_width=1.5,
     transparent: bool = False,
+    color="District",
 ):
     if transparent:
         colors = ["rgba(255,255,255,0)"]
     else:
         colors = hex_to_rgba(px.colors.qualitative.D3, opacity=opacity)
-
+    hover_cols = [
+        col
+        for col in ["Village", "Cell", "Sector", "District", "Province"]
+        if col in df.columns
+    ]
+    hovertemplate = (
+        "<br>".join(
+            [f"<b>{col}</b>=%{{customdata[{i}]}}" for i, col in enumerate(hover_cols)]
+        )
+        + "<extra></extra>"
+    )
     zoom, center = get_zoom_center(df)
     fig = px.choropleth_mapbox(
         df,
         geojson=df.geometry,
         locations=df.index,
-        color="District",
+        color=color,
         mapbox_style="open-street-map",
         zoom=zoom,
         center=center,
         opacity=1,
-        hover_data=["Village", "Cell", "Sector", "District", "Province"],
+        hover_data=hover_cols,
         color_discrete_sequence=colors,
     )
     fig.update_layout(
@@ -98,6 +100,6 @@ def administrative_divisions(
     )
     fig.update_traces(
         marker_line_width=line_width,
-        hovertemplate=VILLAGE_HOVERTEMPLATE,
+        hovertemplate=hovertemplate,
     )
     return fig
