@@ -10,6 +10,9 @@ def get_data():
 
 def main(opacity: float = 0.25, line_width: float = 1.5, transparent: bool = False):
     df_kigali = get_data()
+    df_kigali.geometry = df_kigali.geometry.simplify(
+        tolerance=0.00005, preserve_topology=True
+    )
     fig = plot.administrative_divisions(
         df_kigali,
         opacity=opacity,
