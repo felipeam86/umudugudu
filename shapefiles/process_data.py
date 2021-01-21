@@ -30,14 +30,16 @@ def process_villages(df):
     return df
 
 
-def process_cells(df):
+def process_cells(df, provinces):
     df = df.set_index("cell_id").rename(columns={"Name": "Cell"})
+    df.loc[:, "Province"] = df.province_id.map(provinces)
     df.to_parquet(PARQUETFILES_PATH / "Cell.parquet")
     return df
 
 
-def process_sectors(df):
+def process_sectors(df, provinces):
     df = df.set_index("sector_id").rename(columns={"Name": "Sector"})
+    df.loc[:, "Province"] = df.province_id.map(provinces)
     df.to_parquet(PARQUETFILES_PATH / "Sector.parquet")
 
     return df
@@ -93,8 +95,14 @@ def process_worldbank_shapefile(worldbank_shapefiles: Path = SHAPEFILES_PATH):
     df_districts = read(worldbank_shapefiles / "rwa_district" / "District.shp")
 
     df_villages = process_villages(df_villages)
-    df_cells = process_cells(df_cells)
-    df_sectors = process_sectors(df_sectors)
+    provinces = (
+        df_villages[["province_id", "Province"]]
+        .drop_duplicates()
+        .set_index("province_id")
+        .Province.to_dict()
+    )
+    df_cells = process_cells(df_cells, provinces)
+    df_sectors = process_sectors(df_sectors, provinces)
     df_districts = process_districts(df_districts, df_villages)
     df_provinces = make_province_geometries(df_districts)
 
