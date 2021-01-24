@@ -7,6 +7,18 @@ SHAPEFILES_PATH = Path(__file__).parent
 PARQUETFILES_PATH = Path(__file__).parent.parent / "umudugudu" / "data"
 
 
+def simplify_provinces(df):
+    return df.Province.map(
+        {
+            "Kigali Town/Umujyi wa Kigali": "Kigali",
+            "South/Amajyepfo": "South",
+            "West/Iburengerazuba": "West",
+            "North/Amajyaruguru": "North",
+            "East/Iburasirazuba": "East",
+        }
+    )
+
+
 def unzip_worldbank_files(worldbank_shapefiles: Path = SHAPEFILES_PATH):
     worldbank_shapefiles = Path(worldbank_shapefiles)
     for zipfile in worldbank_shapefiles.glob("*.zip"):
@@ -25,7 +37,11 @@ def process_villages(df):
         .province_id.to_dict()
     )
     df.loc[:, "province_id"] = df.Province.map(provinces_ids)
-    df = df.set_index("village_id").rename(columns={"Name": "Village"})
+    df = (
+        df.set_index("village_id")
+        .rename(columns={"Name": "Village"})
+        .assign(Province=simplify_provinces)
+    )
     df.to_parquet(PARQUETFILES_PATH / "Village.parquet")
     return df
 

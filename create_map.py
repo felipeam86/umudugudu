@@ -5,7 +5,7 @@ from umudugudu import data, plot
 
 def get_data():
     df = data.get_villages()
-    return df.query("Province == 'Kigali Town/Umujyi wa Kigali'")
+    return df.query("Province == 'Kigali'")
 
 
 def main(opacity: float = 0.25, line_width: float = 1.5, transparent: bool = False):
