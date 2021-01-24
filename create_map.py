@@ -8,7 +8,12 @@ def get_data():
     return df.query("Province == 'Kigali'")
 
 
-def main(opacity: float = 0.25, line_width: float = 1.5, transparent: bool = False):
+def main(
+    opacity: float = 0.25,
+    line_width: float = 1.5,
+    transparent: bool = False,
+    legend: bool = True,
+):
     df_kigali = get_data()
     df_kigali.geometry = df_kigali.geometry.simplify(
         tolerance=0.00001, preserve_topology=True
@@ -18,6 +23,7 @@ def main(opacity: float = 0.25, line_width: float = 1.5, transparent: bool = Fal
         opacity=opacity,
         line_width=line_width,
         transparent=transparent,
+        legend=legend,
     )
     export_folder = Path("html")
     export_folder.mkdir(exist_ok=True)

@@ -65,6 +65,7 @@ def administrative_divisions(
     line_width=1.5,
     transparent: bool = False,
     color="District",
+    legend: bool = True,
 ):
     if transparent:
         colors = ["rgba(255,255,255,0)"]
@@ -96,7 +97,7 @@ def administrative_divisions(
     )
     fig.update_layout(
         margin={"r": 0, "t": 0, "l": 0, "b": 0},
-        showlegend=not transparent,
+        showlegend=legend and (not transparent),
     )
     fig.update_traces(
         marker_line_width=line_width,
