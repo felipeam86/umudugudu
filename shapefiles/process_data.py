@@ -169,6 +169,7 @@ def make_province_geometries(df_districts):
         .to_frame()
         .reset_index()
         .set_index("province_id")
+        .set_crs("EPSG:4326")
     )
 
     df.to_parquet(PARQUETFILES_PATH / "Province.parquet")
