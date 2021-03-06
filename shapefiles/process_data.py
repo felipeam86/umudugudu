@@ -41,21 +41,111 @@ def process_villages(df):
         df.set_index("village_id")
         .rename(columns={"Name": "Village"})
         .assign(Province=simplify_provinces)
+        .assign(Sector=lambda df: df.Sector.replace("Mageregere", "Mageragere"))
+        .assign(
+            Cell=lambda df: df.Cell.replace(
+                [
+                    "Munanira Ii",
+                    "Nyakabanda Ii",
+                    "Kabuguru Ii",
+                    "Rwezamenyo Ii",
+                    "Rukiri Ii",
+                    "Kabuga Ii",
+                    "Rugarama Ii",
+                    "Rukomo Ii",
+                    "Rukomo Ii",
+                ],
+                [
+                    "Munanira II",
+                    "Nyakabanda II",
+                    "Kabuguru II",
+                    "Rwezamenyo II",
+                    "Rukiri II",
+                    "Kabuga II",
+                    "Rugarama II",
+                    "Rukomo II",
+                    "Rukomo II",
+                ],
+            )
+        )
     )
+
+    df.loc["11050304", "Cell"] = "Mataba"  # Wrongly assigned to 'Mwendo'
     df.to_parquet(PARQUETFILES_PATH / "Village.parquet")
     return df
 
 
 def process_cells(df, provinces):
-    df = df.set_index("cell_id").rename(columns={"Name": "Cell"})
-    df.loc[:, "Province"] = df.province_id.map(provinces)
+    df = (
+        df.set_index("cell_id")
+        .rename(columns={"Name": "Cell"})
+        .assign(Province=lambda df: df.province_id.map(provinces))
+        .assign(Sector=lambda df: df.Sector.replace("Mageregere", "Mageragere"))
+        .assign(
+            Cell=lambda df: df.Cell.replace(
+                [
+                    "Munanira i",
+                    "Nyakabanda i",
+                    "Kabuguru i",
+                    "Rwezamenyo i",
+                    "Rukiri i",
+                    "Kabuga i",
+                    "Rugarama i",
+                    "Rukomo i",
+                    "Rukomo i",
+                ],
+                [
+                    "Munanira I",
+                    "Nyakabanda I",
+                    "Kabuguru I",
+                    "Rwezamenyo I",
+                    "Rukiri I",
+                    "Kabuga I",
+                    "Rugarama I",
+                    "Rukomo I",
+                    "Rukomo I",
+                ],
+            )
+        )
+        .assign(
+            Cell=lambda df: df.Cell.replace(
+                [
+                    "Munanira ii",
+                    "Nyakabanda ii",
+                    "Kabuguru ii",
+                    "Rwezamenyo ii",
+                    "Rukiri ii",
+                    "Kabuga ii",
+                    "Rugarama ii",
+                    "Rukomo ii",
+                    "Rukomo ii",
+                ],
+                [
+                    "Munanira II",
+                    "Nyakabanda II",
+                    "Kabuguru II",
+                    "Rwezamenyo II",
+                    "Rukiri II",
+                    "Kabuga II",
+                    "Rugarama II",
+                    "Rukomo II",
+                    "Rukomo II",
+                ],
+            )
+        )
+    )
     df.to_parquet(PARQUETFILES_PATH / "Cell.parquet")
     return df
 
 
 def process_sectors(df, provinces):
-    df = df.set_index("sector_id").rename(columns={"Name": "Sector"})
-    df.loc[:, "Province"] = df.province_id.map(provinces)
+    df = (
+        df.set_index("sector_id")
+        .rename(columns={"Name": "Sector"})
+        .assign(Province=lambda df: df.province_id.map(provinces))
+        .assign(Sector=lambda df: df.Sector.replace("Mageregere", "Mageragere"))
+    )
+    df.loc["4116", "Sector"] = "Shyorongi"  # It is misspelled as Shyrongi
     df.to_parquet(PARQUETFILES_PATH / "Sector.parquet")
 
     return df
